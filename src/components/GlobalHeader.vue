@@ -68,6 +68,11 @@ const originItems = [
     title: '用户管理',
   },
   {
+    key: '/admin/pictureManage',
+    label: '图片管理',
+    title: '图片管理',
+  },
+  {
     key: 'others',
     label: h('a', { href: 'https://github.com/Fetters04', target: '_blank' }, '关于作者'),
     title: '关于作者',

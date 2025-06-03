@@ -41,7 +41,9 @@
         />
       </a-form-item>
       <a-form-item>
-        <a-button type="primary" html-type="submit" style="width: 100%">创建</a-button>
+        <a-button type="primary" html-type="submit" style="width: 100%">
+          {{ route.query?.id ? '修改图片' : '创建图片' }}
+        </a-button>
       </a-form-item>
     </a-form>
   </div>
@@ -81,7 +83,7 @@ onMounted(() => {
  */
 const handleSubmit = async (values: any) => {
   console.log(values)
-  const pictureId = picture.value.id
+  const pictureId = picture.value?.id
   if (!pictureId) {
     return
   }
@@ -91,13 +93,20 @@ const handleSubmit = async (values: any) => {
   })
   // 操作成功
   if (res.data.code === 200 && res.data.data) {
-    message.success('创建成功')
-    // 跳转到图片详情页
-    await router.push({
-      path: `/picture/${pictureId}`,
-    })
+    if (route.query?.id) {
+      message.success('修改成功')
+      await router.push({
+        path: `/admin/pictureManage`,
+      })
+    } else {
+      message.success('创建成功')
+      // 跳转到图片详情页
+      await router.push({
+        path: `/picture/${pictureId}`,
+      })
+    }
   } else {
-    message.error('创建失败，' + res.data.message)
+    message.error(route.query.id ? '修改失败，' : '创建失败，' + res.data.message)
   }
 }
 
