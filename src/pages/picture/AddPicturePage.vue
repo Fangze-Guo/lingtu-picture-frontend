@@ -60,6 +60,11 @@ import {
 import { message } from 'ant-design-vue'
 import { useRoute, useRouter } from 'vue-router'
 
+interface ItemOptions {
+  value: string
+  label: string
+}
+
 const router = useRouter()
 const route = useRoute()
 
@@ -69,8 +74,8 @@ const onSuccess = (newPicture: API.PictureVO) => {
   pictureForm.name = newPicture.name
 }
 const pictureForm = reactive<API.PictureEditRequest>({})
-const categoryOptions = ref<string[]>([])
-const tagOptions = ref<string[]>([])
+const categoryOptions = ref<ItemOptions[]>([])
+const tagOptions = ref<ItemOptions[]>([])
 
 onMounted(() => {
   getTagCategoryOptions()
@@ -95,9 +100,7 @@ const handleSubmit = async (values: any) => {
   if (res.data.code === 200 && res.data.data) {
     if (route.query?.id) {
       message.success('修改成功')
-      await router.push({
-        path: `/admin/pictureManage`,
-      })
+      router.back()
     } else {
       message.success('创建成功')
       // 跳转到图片详情页

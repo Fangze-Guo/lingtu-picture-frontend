@@ -46,7 +46,7 @@
           <div>宽度：{{ record.picWidth }}</div>
           <div>高度：{{ record.picHeight }}</div>
           <div>宽高比：{{ record.picScale }}</div>
-          <div>大小：{{ (record.picSize / 1024 / 1024).toFixed(2) }}MB</div>
+          <div>大小：{{ formatSize(record.picSize) }}</div>
         </template>
         <template v-if="column.dataIndex === 'createTime'">
           {{ dayjs(record.createTime).format('YYYY-MM-DD HH:mm:ss') }}
@@ -191,6 +191,17 @@ const doDelete = async (record: API.PictureVO) => {
   } else {
     message.error('删除失败，' + res.data.message)
   }
+}
+
+/**
+ * 格式化文件大小
+ * @param size
+ */
+const formatSize = (size?: number) => {
+  if (!size) return '未知'
+  if (size < 1024) return size + ' B'
+  if (size < 1024 * 1024) return (size / 1024).toFixed(2) + ' KB'
+  return (size / (1024 * 1024)).toFixed(2) + ' MB'
 }
 </script>
 
