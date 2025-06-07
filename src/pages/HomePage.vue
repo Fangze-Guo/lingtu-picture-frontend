@@ -61,7 +61,9 @@
           </a-card>
         </a-list-item>
       </template>
+      <button class="floating-button" @click="goToAddPicturePage">+</button>
     </a-list>
+    <!-- 悬浮按钮 -->
   </div>
 </template>
 
@@ -176,6 +178,11 @@ const doClickPicture = (picture: API.PictureVO) => {
     path: `/picture/${picture.id}`,
   })
 }
+
+const goToAddPicturePage = () => {
+  // 跳转到创建图片页
+  router.push('/picture/add_picture')
+}
 </script>
 
 <style scoped>
@@ -186,5 +193,21 @@ const doClickPicture = (picture: API.PictureVO) => {
 
 #homePage .tag-bar {
   margin-bottom: 16px;
+}
+
+.floating-button {
+  position: fixed;
+  bottom: 70px; /* 距离底部 */
+  right: 20px; /* 距离右侧 */
+  width: 50px;
+  height: 50px;
+  border-radius: 50%; /* 圆形按钮 */
+  background-color: #42b883; /* 背景颜色 */
+  color: white; /* 文字颜色 */
+  font-size: 24px;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2); /* 阴影效果 */
+  z-index: 999; /* 确保按钮在其他内容之上 */
 }
 </style>
