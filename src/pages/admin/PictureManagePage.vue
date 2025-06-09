@@ -1,5 +1,9 @@
 <template>
   <div id="pictureManagePage">
+    <a-space style="margin-bottom: 16px">
+      <a-button type="primary" href="/picture/add_picture" target="_blank">+ 创建图片</a-button>
+      <a-button type="primary" href="/picture/add_picture/batch" target="_blank" ghost>+ 批量创建图片</a-button>
+    </a-space>
     <!-- 搜索表单 -->
     <a-form :model="searchParams" layout="inline" @finish="doSearch" style="margin-bottom: 30px">
       <a-form-item label="关键词">

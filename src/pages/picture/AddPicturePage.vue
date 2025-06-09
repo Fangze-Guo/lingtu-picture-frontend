@@ -5,7 +5,7 @@
     </h2>
     <!-- 选择上传方式 -->
     <a-tabs v-model:activeKey="uploadType"
-    >>
+    >
       <a-tab-pane key="file" tab="文件上传">
         <PictureUpload :picture="picture" :onSuccess="onSuccess" />
       </a-tab-pane>

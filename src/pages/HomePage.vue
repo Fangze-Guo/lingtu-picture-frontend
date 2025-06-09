@@ -32,7 +32,10 @@
     <a-list
       :grid="{ gutter: 16, xs: 1, sm: 2, md: 3, lg: 4, xl: 5, xxl: 6 }"
       :data-source="dataList"
-      :pagination="pagination"
+      :pagination="{
+        ...pagination,
+        style: { textAlign: 'center' },
+      }"
       :loading="loading"
     >
       <template #renderItem="{ item: picture }">
@@ -61,9 +64,9 @@
           </a-card>
         </a-list-item>
       </template>
+      <!-- 悬浮按钮 -->
       <button class="floating-button" @click="goToAddPicturePage">+</button>
     </a-list>
-    <!-- 悬浮按钮 -->
   </div>
 </template>
 
