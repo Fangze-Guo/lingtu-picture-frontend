@@ -137,7 +137,7 @@ const doEdit = () => {
   router.push('/picture/add_picture?id=' + picture.value.id)
 }
 // 删除
-const doDelete = async () => {
+const doDelete = async () => { 
   const id = picture.value.id
   if (!id) {
     return
@@ -153,7 +153,7 @@ const doDelete = async () => {
 
 // 处理下载
 const doDownload = () => {
-  downloadImage(picture.value.url)
+  downloadImage(picture.value.downloadUrl)
 }
 </script>
 

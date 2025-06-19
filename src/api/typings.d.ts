@@ -145,6 +145,7 @@ declare namespace API {
   type Picture = {
     category?: string
     createTime?: string
+    downloadUrl?: string
     editTime?: string
     id?: number
     introduction?: string
@@ -160,6 +161,7 @@ declare namespace API {
     reviewTime?: string
     reviewerId?: number
     tags?: string
+    thumbnailUrl?: string
     updateTime?: string
     url?: string
     userId?: number
@@ -235,6 +237,7 @@ declare namespace API {
   type PictureVO = {
     category?: string
     createTime?: string
+    downloadUrl?: string
     editTime?: string
     id?: number
     introduction?: string
@@ -245,6 +248,7 @@ declare namespace API {
     picSize?: number
     picWidth?: number
     tags?: string[]
+    thumbnailUrl?: string
     updateTime?: string
     url?: string
     user?: UserVO
