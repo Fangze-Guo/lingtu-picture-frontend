@@ -145,6 +145,7 @@ import {
   PIC_REVIEW_STATUS_MAP,
   PIC_REVIEW_STATUS_OPTIONS,
 } from '@/constants/picture.ts'
+import { formatSize } from '@/utils'
 
 // 定义列
 const columns = [
@@ -277,17 +278,6 @@ const doDelete = async (record: API.PictureVO) => {
   } else {
     message.error('删除失败，' + res.data.message)
   }
-}
-
-/**
- * 格式化文件大小
- * @param size
- */
-const formatSize = (size?: number) => {
-  if (!size) return '未知'
-  if (size < 1024) return size + ' B'
-  if (size < 1024 * 1024) return (size / 1024).toFixed(2) + ' KB'
-  return (size / (1024 * 1024)).toFixed(2) + ' MB'
 }
 
 /**
