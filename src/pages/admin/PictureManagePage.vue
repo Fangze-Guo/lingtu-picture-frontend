@@ -238,6 +238,7 @@ const showModal = () => {
 const fetchData = async () => {
   const res = await listPictureByPageUsingPost({
     ...searchParams,
+    nullSpaceId: true,
   })
   if (res.data.code == 200 && res.data.data) {
     dataList.value = res.data.data.records ?? []

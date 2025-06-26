@@ -87,7 +87,7 @@ import { message } from 'ant-design-vue'
 import { useLoginUserStore } from '@/stores/useLoginUserStore.ts'
 import { useRouter } from 'vue-router'
 import { DeleteOutlined, DownloadOutlined, EditOutlined } from '@ant-design/icons-vue'
-import { downloadImage } from '@/utils'
+import { downloadImage, formatSize } from '@/utils'
 
 interface Props {
   id: number | string
@@ -128,20 +128,15 @@ const getPictureDetail = async () => {
   }
 }
 
-/**
- * 格式化文件大小
- * @param size
- */
-const formatSize = (size?: number) => {
-  if (!size) return '未知'
-  if (size < 1024) return size + ' B'
-  if (size < 1024 * 1024) return (size / 1024).toFixed(2) + ' KB'
-  return (size / (1024 * 1024)).toFixed(2) + ' MB'
-}
-
 // 编辑
 const doEdit = () => {
-  router.push('/picture/add_picture?id=' + picture.value.id)
+  router.push({
+    path: '/picture/add_picture',
+    query: {
+      id: picture.value.id,
+      spaceId: picture.value.spaceId,
+    },
+  })
 }
 // 删除
 const doDelete = async () => {

@@ -113,10 +113,6 @@ const handleSubmit = async () => {
   // 操作成功
   if (res.data.code === 200 && res.data.data) {
     message.success('操作成功')
-    // 跳转到空间详情页
-    await router.push({
-      path: `/space/${res.data.data}`,
-    })
   } else {
     message.error('操作失败，' + res.data.message)
   }
