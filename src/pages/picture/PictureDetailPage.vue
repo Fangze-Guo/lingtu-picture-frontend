@@ -60,12 +60,19 @@
                 <EditOutlined />
               </template>
             </a-button>
-            <a-button v-if="canEdit" danger @click="doDelete">
-              删除
-              <template #icon>
-                <DeleteOutlined />
-              </template>
-            </a-button>
+            <a-popconfirm
+              title="您确定删除该图片吗？"
+              ok-text="确定"
+              cancel-text="取消"
+              @confirm="doDelete"
+            >
+              <a-button v-if="canEdit" danger>
+                删除
+                <template #icon>
+                  <DeleteOutlined />
+                </template>
+              </a-button>
+            </a-popconfirm>
           </a-space>
         </a-card>
       </a-col>
@@ -137,7 +144,7 @@ const doEdit = () => {
   router.push('/picture/add_picture?id=' + picture.value.id)
 }
 // 删除
-const doDelete = async () => { 
+const doDelete = async () => {
   const id = picture.value.id
   if (!id) {
     return

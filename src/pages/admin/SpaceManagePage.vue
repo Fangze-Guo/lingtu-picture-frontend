@@ -34,7 +34,7 @@
       <template #bodyCell="{ column, record }">
         <!-- 空间级别 -->
         <template v-if="column.dataIndex === 'spaceLevel'">
-          <a-tag v-if="record.spaceLevel == 0">{{ SPACE_LEVEL_MAP[record.spaceLevel] }} </a-tag>
+          <a-tag v-if="record.spaceLevel == 0">{{ SPACE_LEVEL_MAP[record.spaceLevel] }}</a-tag>
           <a-tag v-if="record.spaceLevel == 1" style="background-color: skyblue"
             >{{ SPACE_LEVEL_MAP[record.spaceLevel] }}
           </a-tag>
@@ -58,7 +58,14 @@
             <a-button type="link" :href="`/space/add_space?id=${record.id}`" target="_blank">
               编辑
             </a-button>
-            <a-button type="link" danger @click="doDelete(record.id)">删除</a-button>
+            <a-popconfirm
+              title="您确定删除该空间吗？"
+              ok-text="确定"
+              cancel-text="取消"
+              @confirm="doDelete(record)"
+            >
+              <a-button type="link" danger @click="">删除</a-button>
+            </a-popconfirm>
           </a-space>
         </template>
       </template>
