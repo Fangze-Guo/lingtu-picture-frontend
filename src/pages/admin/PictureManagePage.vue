@@ -2,42 +2,12 @@
   <div id="pictureManagePage">
     <a-space style="margin-bottom: 16px">
       <a-button type="primary" href="/picture/add_picture" target="_blank">+ 创建图片</a-button>
-      <a-button type="primary" href="/picture/add_picture/batch" target="_blank" ghost>+ 批量创建图片</a-button>
+      <a-button type="primary" href="/picture/add_picture/batch" target="_blank" ghost
+        >+ 批量创建图片
+      </a-button>
     </a-space>
     <!-- 搜索表单 -->
-    <a-form :model="searchParams" layout="inline" @finish="doSearch" style="margin-bottom: 30px">
-      <a-form-item label="关键词">
-        <a-input
-          v-model:value="searchParams.searchText"
-          placeholder="从名称和简介搜索"
-          allow-clear
-        />
-      </a-form-item>
-      <a-form-item label="类型">
-        <a-input v-model:value="searchParams.category" placeholder="请输入类型" allow-clear />
-      </a-form-item>
-      <a-form-item label="标签">
-        <a-select
-          v-model:value="searchParams.tags"
-          mode="tags"
-          placeholder="请输入标签"
-          style="min-width: 180px"
-          allow-clear
-        />
-      </a-form-item>
-      <a-form-item label="审核状态">
-        <a-select
-          v-model:value="searchParams.reviewStatus"
-          placeholder="请选择审核状态"
-          :options="PIC_REVIEW_STATUS_OPTIONS"
-          style="min-width: 180px"
-          allow-clear
-        />
-      </a-form-item>
-      <a-form-item>
-        <a-button type="primary" html-type="submit">搜索</a-button>
-      </a-form-item>
-    </a-form>
+    <PictureSearchForm :on-search="doSearch" :is-admin="true" />
     <!-- 数据表格 -->
     <a-table
       :columns="columns"
@@ -132,7 +102,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { message } from 'ant-design-vue'
 import dayjs from 'dayjs'
 import {
@@ -140,12 +110,9 @@ import {
   doPictureReviewUsingPost,
   listPictureByPageUsingPost,
 } from '@/api/pictureController.ts'
-import {
-  PIC_REVIEW_STATUS_ENUM,
-  PIC_REVIEW_STATUS_MAP,
-  PIC_REVIEW_STATUS_OPTIONS,
-} from '@/constants/picture.ts'
+import { PIC_REVIEW_STATUS_ENUM, PIC_REVIEW_STATUS_MAP } from '@/constants/picture.ts'
 import { formatSize } from '@/utils'
+import PictureSearchForm from '@/components/PictureSearchForm.vue'
 
 // 定义列
 const columns = [
@@ -205,7 +172,7 @@ const columns = [
 const dataList = ref<API.Picture[]>([])
 const total = ref(0)
 // 搜索条件
-const searchParams = reactive<API.PictureQueryRequest>({
+const searchParams = ref<API.PictureQueryRequest>({
   current: 1,
   pageSize: 10,
   sortField: 'createTime',
@@ -214,8 +181,8 @@ const searchParams = reactive<API.PictureQueryRequest>({
 // 分页信息
 const pagination = computed(() => {
   return {
-    current: searchParams.current,
-    pageSize: searchParams.pageSize,
+    current: searchParams.value.current,
+    pageSize: searchParams.value.pageSize,
     total: total.value,
     showSizeChanger: true,
     showTotal: (total: any) => `共 ${total} 条`,
@@ -228,8 +195,12 @@ onMounted(() => {
   fetchData()
 })
 
+/**
+ * 审核拒绝提示
+ */
 const showModal = () => {
   open.value = true
+  rejectMessage.value = ''
 }
 
 /**
@@ -237,7 +208,7 @@ const showModal = () => {
  */
 const fetchData = async () => {
   const res = await listPictureByPageUsingPost({
-    ...searchParams,
+    ...searchParams.value,
     nullSpaceId: true,
   })
   if (res.data.code == 200 && res.data.data) {
@@ -253,16 +224,20 @@ const fetchData = async () => {
  * @param pagination
  */
 const doTableChange = (pagination: any) => {
-  searchParams.current = pagination.current
-  searchParams.pageSize = pagination.pageSize
+  searchParams.value.current = pagination.current
+  searchParams.value.pageSize = pagination.pageSize
   fetchData()
 }
 
 /**
  * 搜索
  */
-const doSearch = () => {
-  searchParams.current = 1
+const doSearch = (newSearchParams: API.PictureQueryRequest) => {
+  searchParams.value = {
+    ...searchParams.value,
+    ...newSearchParams,
+    current: 1,
+  }
   fetchData()
 }
 
@@ -270,7 +245,7 @@ const doSearch = () => {
  * 删除数据
  * @param record
  */
-const doDelete = async (record: API.PictureVO) => {
+const doDelete = async (record: API.Picture) => {
   const res = await deletePictureUsingPost({ id: record.id })
   if (res.data.code == 200) {
     message.success('删除成功')
