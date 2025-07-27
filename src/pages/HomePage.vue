@@ -10,6 +10,10 @@
         @search="doSearch"
       />
     </div>
+    <!-- 按颜色搜索 -->
+    <a-form-item label="按颜色搜索" style="margin-top: 16px">
+      <color-picker format="hex" @pureColorChange="onColorChange" />
+    </a-form-item>
     <!-- 分类 + 标签 -->
     <a-tabs v-model:activeKey="selectedCategory" @change="doSearch">
       <a-tab-pane key="all" tab="全部" />
@@ -48,10 +52,12 @@ import { onMounted, reactive, ref } from 'vue'
 import {
   listPictureTagCategoryUsingGet,
   listPictureVoByPageUsingPost,
+  searchPictureByColorUsingPost,
 } from '@/api/pictureController.ts'
 import { message } from 'ant-design-vue'
 import { useRouter } from 'vue-router'
 import PictureList from '@/components/PictureList.vue'
+import { ColorPicker } from 'vue3-colorpicker'
 
 const dataList = ref<API.PictureVO[]>([])
 const total = ref(0)
@@ -140,6 +146,23 @@ const getTagCategoryOptions = async () => {
 const goToAddPicturePage = () => {
   // 跳转到创建图片页
   router.push('/picture/add_picture')
+}
+
+/**
+ * 切换颜色触发事件
+ * @param color
+ */
+const onColorChange = async (color: string) => {
+  const res = await searchPictureByColorUsingPost({
+    picColor: color,
+  })
+  if (res.data.code === 200 && res.data.data) {
+    const data = res.data.data ?? []
+    dataList.value = data
+    total.value = data.length
+  } else {
+    message.error('获取数据失败，' + res.data.message)
+  }
 }
 </script>
 
