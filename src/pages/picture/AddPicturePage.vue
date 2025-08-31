@@ -15,6 +15,17 @@
         <UrlPictureUpload :picture="picture" :spaceId="spaceId" :onSuccess="onSuccess" />
       </a-tab-pane>
     </a-tabs>
+    <!-- 图片裁剪 -->
+    <div v-if="picture" class="edit-bar">
+      <a-button :icon="h(EditOutlined)" @click="doEditPicture">编辑图片</a-button>
+      <ImageCropper
+        ref="imageCropperRef"
+        :imageUrl="picture?.url"
+        :picture="picture"
+        :spaceId="spaceId"
+        :onSuccess="onCropSuccess"
+      />
+    </div>
     <a-form
       v-if="picture"
       name="pictureForm"
@@ -61,7 +72,7 @@
 
 <script setup lang="ts">
 import PictureUpload from '@/components/PictureUpload.vue'
-import { computed, onMounted, reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref, h } from 'vue'
 import {
   editPictureUsingPost,
   getPictureVoByIdUsingGet,
@@ -69,7 +80,9 @@ import {
 } from '@/api/pictureController.ts'
 import { message } from 'ant-design-vue'
 import { useRoute, useRouter } from 'vue-router'
+import { EditOutlined } from '@ant-design/icons-vue'
 import UrlPictureUpload from '@/components/UrlPictureUpload.vue'
+import ImageCropper from '@/components/ImageCropper.vue'
 
 interface ItemOptions {
   value: string
@@ -90,7 +103,7 @@ const tagOptions = ref<ItemOptions[]>([])
 const uploadType = ref<'file' | 'url'>('file')
 // 空间 id
 const spaceId = computed(() => {
-  return route.query?.spaceId
+  return route.query?.spaceId ? Number(route.query.spaceId) : undefined
 })
 
 onMounted(() => {
@@ -102,14 +115,13 @@ onMounted(() => {
  * 提交表单
  * @param values
  */
-const handleSubmit = async (values: any) => {
+const handleSubmit = async (values: API.PictureEditRequest) => {
   const pictureId = picture.value?.id
   if (!pictureId) {
     return
   }
   const res = await editPictureUsingPost({
     id: pictureId,
-    spaceId: spaceId.value,
     ...values,
   })
   // 操作成功
@@ -172,11 +184,31 @@ const getOldPicture = async () => {
     }
   }
 }
+
+// 图片编辑弹窗引用
+const imageCropperRef = ref()
+
+// 编辑图片
+const doEditPicture = () => {
+  if (imageCropperRef.value) {
+    imageCropperRef.value.openModal()
+  }
+}
+
+// 编辑成功事件
+const onCropSuccess = (newPicture: API.PictureVO) => {
+  picture.value = newPicture
+}
 </script>
 
 <style scoped>
 #addPicturePage {
   margin: 0 auto;
   max-width: 720px;
+}
+
+#addPicturePage .edit-bar {
+  text-align: center;
+  margin: 16px 0;
 }
 </style>
