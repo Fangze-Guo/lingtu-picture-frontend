@@ -7,12 +7,13 @@
         <a-button type="primary" :href="`/picture/add_picture?spaceId=${id}`" target="_blank">
           + 创建图片
         </a-button>
+        <a-button :icon="h(EditOutlined)" @click="doBatchEdit"> 批量编辑</a-button>
         <a-tooltip
           :title="`占用空间 ${formatSize(space.totalSize)} / ${formatSize(space.maxSize)}`"
         >
           <a-progress
             type="circle"
-            :percent="((space.totalSize * 100) / space.maxSize).toFixed(1)"
+            :percent="(((space.totalSize ?? 0) * 100) / (space.maxSize ?? 0)).toFixed(1)"
             :size="50"
           />
         </a-tooltip>
@@ -35,10 +36,16 @@
       @change="onPageChange"
     />
   </div>
+  <BatchEditPictureModal
+    ref="batchEditPictureModalRef"
+    :spaceId="id"
+    :pictureList="dataList"
+    :onSuccess="onBatchEditPictureSuccess"
+  />
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, h } from 'vue'
 import { getSpaceVoByIdUsingGet } from '@/api/spaceController.ts'
 import { message } from 'ant-design-vue'
 import {
@@ -50,9 +57,11 @@ import PictureList from '@/components/PictureList.vue'
 import PictureSearchForm from '@/components/PictureSearchForm.vue'
 import { ColorPicker } from 'vue3-colorpicker'
 import 'vue3-colorpicker/style.css'
+import { EditOutlined } from '@ant-design/icons-vue'
+import BatchEditPictureModal from '@/components/BatchEditPictureModel.vue'
 
 const props = defineProps<{
-  id: string | number
+  id: number
 }>()
 const space = ref<API.SpaceVO>({})
 
@@ -60,15 +69,17 @@ const space = ref<API.SpaceVO>({})
 const fetchSpaceDetail = async () => {
   try {
     const res = await getSpaceVoByIdUsingGet({
-      id: props.id,
+      id: props.id as number,
     })
     if (res.data.code === 200 && res.data.data) {
       space.value = res.data.data
     } else {
       message.error('获取空间详情失败，' + res.data.message)
     }
-  } catch (e: any) {
-    message.error('获取空间详情失败：' + e.message)
+  } catch (e: unknown) {
+    if (e instanceof Error) {
+      message.error('获取空间详情失败：' + e.message)
+    }
   }
 }
 
@@ -77,7 +88,7 @@ onMounted(() => {
 })
 
 // 数据
-const dataList = ref([])
+const dataList = ref<API.PictureVO[]>([])
 const total = ref(0)
 const loading = ref(true)
 
@@ -104,7 +115,7 @@ const fetchData = async () => {
     spaceId: props.id,
     ...searchParams.value,
   }
-  const res = await listPictureVoByPageUsingPost(params)
+  const res = await listPictureVoByPageUsingPost(params as API.PictureQueryRequest)
   if (res.data.data) {
     dataList.value = res.data.data.records ?? []
     total.value = res.data.data.total ?? 0
@@ -136,7 +147,7 @@ const onSearch = (newSearchParams: API.PictureQueryRequest) => {
 const onColorChange = async (color: string) => {
   const res = await searchPictureByColorUsingPost({
     picColor: color,
-    spaceId: props.id,
+    spaceId: props.id as number,
   })
   if (res.data.code === 200 && res.data.data) {
     const data = res.data.data ?? []
@@ -144,6 +155,21 @@ const onColorChange = async (color: string) => {
     total.value = data.length
   } else {
     message.error('获取数据失败，' + res.data.message)
+  }
+}
+
+// 分享弹窗引用
+const batchEditPictureModalRef = ref()
+
+// 批量编辑成功后，刷新数据
+const onBatchEditPictureSuccess = () => {
+  fetchData()
+}
+
+// 打开批量编辑弹窗
+const doBatchEdit = () => {
+  if (batchEditPictureModalRef.value) {
+    batchEditPictureModalRef.value.openModal()
   }
 }
 </script>

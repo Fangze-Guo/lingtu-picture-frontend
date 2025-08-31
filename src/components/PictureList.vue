@@ -31,31 +31,26 @@
               </template>
             </a-card-meta>
             <template v-if="showOps" #actions>
-              <a-space @click="(e) => doSearch(picture, e)">
-                <search-outlined />
-                搜索
-              </a-space>
-              <a-space @click="(e) => doEdit(picture, e)">
-                <edit-outlined />
-                编辑
-              </a-space>
-              <a-space @click="(e) => doDelete(picture, e)">
-                <delete-outlined />
-                删除
-              </a-space>
+              <search-outlined @click="(e) => doSearch(picture, e)"/>
+              <share-alt-outlined @click="(e) => doShare(picture, e)"/>
+              <edit-outlined @click="(e) => doEdit(picture, e)"/>
+              <delete-outlined @click="(e) => doDelete(picture, e)"/>
             </template>
           </a-card>
         </a-list-item>
       </template>
     </a-list>
+    <ShareModel ref="shareModalRef" :link="shareLink" :title="'分享图片'" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { useRouter } from 'vue-router'
-import { DeleteOutlined, EditOutlined, SearchOutlined } from '@ant-design/icons-vue'
 import { deletePictureUsingPost } from '@/api/pictureController.ts'
+import { DeleteOutlined, EditOutlined, SearchOutlined, ShareAltOutlined } from '@ant-design/icons-vue'
 import { message, Modal } from 'ant-design-vue'
+import { useRouter } from 'vue-router'
+import { ref } from 'vue'
+import ShareModel from '@/components/ShareModel.vue'
 
 interface Props {
   dataList?: API.PictureVO[]
@@ -80,7 +75,7 @@ const doClickPicture = (picture: API.PictureVO) => {
 }
 
 // 编辑
-const doEdit = (picture: API.PictureVO, e) => {
+const doEdit = (picture: API.PictureVO, e: Event) => {
   e.stopPropagation()
   router.push({
     path: '/picture/add_picture',
@@ -92,7 +87,7 @@ const doEdit = (picture: API.PictureVO, e) => {
 }
 
 // 删除
-const doDelete = async (picture: API.PictureVO, e) => {
+const doDelete = async (picture: API.PictureVO, e: Event) => {
   e.stopPropagation()
   Modal.confirm({
     title: '确认删除',
@@ -121,11 +116,23 @@ const doDelete = async (picture: API.PictureVO, e) => {
 }
 
 // 以图搜图
-const doSearch = (picture, e) => {
+const doSearch = (picture: API.PictureVO, e: Event) => {
   e.stopPropagation()
   window.open(`/picture/search_picture?pictureId=${picture.id}`)
 }
 
+// 分享弹窗引用
+const shareModalRef = ref()
+// 分享链接
+const shareLink = ref<string>('')
+// 分享
+const doShare = (picture: API.PictureVO, e: Event) => {
+  e.stopPropagation()
+  shareLink.value = `${window.location.protocol}//${window.location.host}/picture/${picture.id}`
+  if (shareModalRef.value) {
+    shareModalRef.value.openModal()
+  }
+}
 </script>
 
 <style scoped></style>

@@ -2,13 +2,13 @@
   <div id="pictureDetailPage">
     <a-row :gutter="[16, 16]">
       <!-- 图片展示区 -->
-      <a-col :sm="24" :md="16" :xl="18">
+      <a-col :sm="24" :md="16" :xl="16">
         <a-card title="图片预览">
           <a-image style="max-height: 600px; object-fit: contain" :src="picture.url" />
         </a-card>
       </a-col>
       <!-- 图片信息区 -->
-      <a-col :sm="24" :md="8" :xl="6">
+      <a-col :sm="24" :md="8" :xl="8">
         <a-card title="图片信息">
           <a-descriptions :column="1">
             <a-descriptions-item label="作者">
@@ -67,6 +67,12 @@
                 <DownloadOutlined />
               </template>
             </a-button>
+            <a-button type="primary" ghost @click="doShare">
+              分享
+              <template #icon>
+                <ShareAltOutlined />
+              </template>
+            </a-button>
             <a-button v-if="canEdit" type="default" @click="doEdit">
               编辑
               <template #icon>
@@ -90,6 +96,7 @@
         </a-card>
       </a-col>
     </a-row>
+    <ShareModel ref="shareModalRef" :link="shareLink" :title="'分享图片'" />
   </div>
 </template>
 
@@ -99,8 +106,9 @@ import { deletePictureUsingPost, getPictureVoByIdUsingGet } from '@/api/pictureC
 import { message } from 'ant-design-vue'
 import { useLoginUserStore } from '@/stores/useLoginUserStore.ts'
 import { useRouter } from 'vue-router'
-import { DeleteOutlined, DownloadOutlined, EditOutlined } from '@ant-design/icons-vue'
+import { DeleteOutlined, DownloadOutlined, EditOutlined, ShareAltOutlined } from '@ant-design/icons-vue'
 import { downloadImage, formatSize, toHexColor } from '@/utils'
+import ShareModel from '@/components/ShareModel.vue'
 
 interface Props {
   id: number | string
@@ -132,7 +140,7 @@ onMounted(() => {
  */
 const getPictureDetail = async () => {
   const res = await getPictureVoByIdUsingGet({
-    id: props.id,
+    id: props.id as number,
   })
   if (res.data.code === 200 && res.data.data) {
     picture.value = res.data.data
@@ -169,6 +177,18 @@ const doDelete = async () => {
 // 处理下载
 const doDownload = () => {
   downloadImage(picture.value.downloadUrl)
+}
+
+// 分享弹窗引用
+const shareModalRef = ref()
+// 分享链接
+const shareLink = ref<string>('')
+// 分享
+const doShare = () => {
+  shareLink.value = `${window.location.protocol}//${window.location.host}/picture/${picture.value.id}`
+  if (shareModalRef.value) {
+    shareModalRef.value.openModal()
+  }
 }
 </script>
 

@@ -101,12 +101,6 @@ declare namespace API {
     message?: string
   }
 
-  type BaseResponseString_ = {
-    code?: number
-    data?: string
-    message?: string
-  }
-
   type BaseResponseUser_ = {
     code?: number
     data?: User
@@ -121,11 +115,6 @@ declare namespace API {
 
   type DeleteRequest = {
     id?: number
-  }
-
-  type fileDownloadUsingGETParams = {
-    /** fileName */
-    fileName?: string
   }
 
   type getPictureByIdUsingGETParams = {
@@ -240,6 +229,14 @@ declare namespace API {
     updateTime?: string
     url?: string
     userId?: number
+  }
+
+  type PictureEditByBatchRequest = {
+    category?: string
+    nameRule?: string
+    pictureIdList?: number[]
+    spaceId?: number
+    tags?: string[]
   }
 
   type PictureEditRequest = {
