@@ -117,7 +117,7 @@ const tagOptions = ref<ItemOptions[]>([])
 const uploadType = ref<'file' | 'url'>('file')
 // 空间 id
 const spaceId = computed(() => {
-  return route.query?.spaceId ? Number(route.query.spaceId) : undefined
+  return route.query?.spaceId ?? undefined
 })
 
 onMounted(() => {
