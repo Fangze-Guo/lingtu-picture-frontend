@@ -1,17 +1,18 @@
-import { createRouter, createWebHistory } from 'vue-router'
-import HomePage from '@/pages/HomePage.vue'
-import UserLoginPage from '@/pages/user/UserLoginPage.vue'
-import UserRegisterPage from '@/pages/user/UserRegisterPage.vue'
-import UserManagePage from '@/pages/admin/UserManagePage.vue'
-import AddPicturePage from '@/pages/picture/AddPicturePage.vue'
 import PictureManagePage from '@/pages/admin/PictureManagePage.vue'
-import PictureDetailPage from '@/pages/picture/PictureDetailPage.vue'
-import AddPictureBatchPage from '@/pages/picture/AddPictureBatchPage.vue'
 import SpaceManagePage from '@/pages/admin/SpaceManagePage.vue'
+import UserManagePage from '@/pages/admin/UserManagePage.vue'
+import HomePage from '@/pages/HomePage.vue'
+import AddPictureBatchPage from '@/pages/picture/AddPictureBatchPage.vue'
+import AddPicturePage from '@/pages/picture/AddPicturePage.vue'
+import PictureDetailPage from '@/pages/picture/PictureDetailPage.vue'
+import SearchPicturePage from '@/pages/picture/SearchPicturePage.vue'
 import AddSpacePage from '@/pages/space/AddSpacePage.vue'
 import MySpacePage from '@/pages/space/MySpacePage.vue'
+import SpaceAnalyzePage from '@/pages/space/SpaceAnalyze.vue'
 import SpaceDetailPage from '@/pages/space/SpaceDetailPage.vue'
-import SearchPicturePage from '@/pages/picture/SearchPicturePage.vue'
+import UserLoginPage from '@/pages/user/UserLoginPage.vue'
+import UserRegisterPage from '@/pages/user/UserRegisterPage.vue'
+import { createRouter, createWebHistory } from 'vue-router'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -82,6 +83,11 @@ const router = createRouter({
       path: '/picture/search_picture',
       name: '图片搜索',
       component: SearchPicturePage,
+    },
+    {
+      path: '/space_analyze',
+      name: '空间分析',
+      component: SpaceAnalyzePage,
     },
   ],
 })

@@ -8,6 +8,15 @@
           + 创建图片
         </a-button>
         <a-button :icon="h(EditOutlined)" @click="doBatchEdit"> 批量编辑</a-button>
+        <a-button
+          type="primary"
+          ghost
+          :icon="h(BarChartOutlined)"
+          :href="`/space_analyze?spaceId=${id}`"
+          target="_blank"
+        >
+          空间分析
+        </a-button>
         <a-tooltip
           :title="`占用空间 ${formatSize(space.totalSize)} / ${formatSize(space.maxSize)}`"
         >
@@ -45,20 +54,20 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, h } from 'vue'
-import { getSpaceVoByIdUsingGet } from '@/api/spaceController.ts'
-import { message } from 'ant-design-vue'
 import {
   listPictureVoByPageUsingPost,
   searchPictureByColorUsingPost,
 } from '@/api/pictureController.ts'
-import { formatSize } from '@/utils'
+import { getSpaceVoByIdUsingGet } from '@/api/spaceController.ts'
+import BatchEditPictureModal from '@/components/BatchEditPictureModel.vue'
 import PictureList from '@/components/PictureList.vue'
 import PictureSearchForm from '@/components/PictureSearchForm.vue'
+import { formatSize } from '@/utils'
+import { BarChartOutlined, EditOutlined } from '@ant-design/icons-vue'
+import { message } from 'ant-design-vue'
+import { h, onMounted, ref } from 'vue'
 import { ColorPicker } from 'vue3-colorpicker'
 import 'vue3-colorpicker/style.css'
-import { EditOutlined } from '@ant-design/icons-vue'
-import BatchEditPictureModal from '@/components/BatchEditPictureModel.vue'
 
 const props = defineProps<{
   id: number

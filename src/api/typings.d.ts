@@ -502,6 +502,9 @@ declare namespace API {
   }
 
   type SpaceRankAnalyzeRequest = {
+    queryAll?: boolean
+    queryPublic?: boolean
+    spaceId?: number
     topN?: number
   }
 

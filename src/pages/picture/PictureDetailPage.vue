@@ -140,7 +140,7 @@ onMounted(() => {
  */
 const getPictureDetail = async () => {
   const res = await getPictureVoByIdUsingGet({
-    id: props.id as number,
+    id: props.id as any,
   })
   if (res.data.code === 200 && res.data.data) {
     picture.value = res.data.data

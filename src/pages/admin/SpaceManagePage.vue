@@ -2,6 +2,12 @@
   <div id="spaceManagePage">
     <a-space style="margin-bottom: 16px">
       <a-button type="primary" href="/space/add_space" target="_blank">+ 创建空间</a-button>
+      <a-button type="primary" ghost href="/space_analyze?queryPublic=1" target="_blank">
+        分析公共图库
+      </a-button>
+      <a-button type="primary" ghost href="/space_analyze?queryAll=1" target="_blank">
+        分析全空间
+      </a-button>
     </a-space>
     <!-- 搜索表单 -->
     <a-form :model="searchParams" layout="inline" @finish="doSearch" style="margin-bottom: 30px">
@@ -64,8 +70,11 @@
               cancel-text="取消"
               @confirm="doDelete(record)"
             >
-              <a-button type="link" danger @click="">删除</a-button>
+              <a-button type="link" danger>删除</a-button>
             </a-popconfirm>
+            <a-button type="link" :href="`/space_analyze?spaceId=${record.id}`" target="_blank">
+              分析
+            </a-button>
           </a-space>
         </template>
       </template>
@@ -136,19 +145,13 @@ const pagination = computed(() => {
     pageSize: searchParams.pageSize,
     total: total.value,
     showSizeChanger: true,
-    showTotal: (total: any) => `共 ${total} 条`,
+    showTotal: (total: number) => `共 ${total} 条`,
   }
 })
-const rejectMessage = ref<string>('')
-const open = ref<boolean>(false)
 
 onMounted(() => {
   fetchData()
 })
-
-const showModal = () => {
-  open.value = true
-}
 
 /**
  * 获取数据
@@ -169,7 +172,7 @@ const fetchData = async () => {
  * 表格改变
  * @param pagination
  */
-const doTableChange = (pagination: any) => {
+const doTableChange = (pagination: { current: number; pageSize: number }) => {
   searchParams.current = pagination.current
   searchParams.pageSize = pagination.pageSize
   fetchData()
