@@ -14,29 +14,37 @@
 
       <!-- 导航菜单 -->
       <div class="nav-menu">
-        <a-menu
-          v-model:selectedKeys="current"
-          mode="horizontal"
-          :items="items"
-          @click="doMenuClick"
-          class="transparent-menu"
-        />
+        <div class="nav-item" :class="{ active: currentPath === '/' }" @click="navigateTo('/')">
+          <HomeOutlined />
+          <span>首页</span>
+        </div>
+        <div class="nav-item" :class="{ active: currentPath === '/space/my_space' }" @click="navigateTo('/space/my_space')">
+          <PictureOutlined />
+          <span>我的空间</span>
+        </div>
+        <template v-if="isAdmin">
+          <div class="nav-item" :class="{ active: currentPath === '/admin/userManage' }" @click="navigateTo('/admin/userManage')">
+            <TeamOutlined />
+            <span>用户管理</span>
+          </div>
+          <div class="nav-item" :class="{ active: currentPath === '/admin/pictureManage' }" @click="navigateTo('/admin/pictureManage')">
+            <AppstoreOutlined />
+            <span>图片管理</span>
+          </div>
+          <div class="nav-item" :class="{ active: currentPath === '/admin/spaceManage' }" @click="navigateTo('/admin/spaceManage')">
+            <FolderOutlined />
+            <span>空间管理</span>
+          </div>
+        </template>
       </div>
 
       <!-- 右侧操作区 -->
       <div class="header-actions">
         <!-- 搜索按钮 -->
         <a-tooltip title="搜索">
-          <a-button type="text" class="action-btn" @click="showSearch = true">
-            <template #icon><SearchOutlined /></template>
-          </a-button>
-        </a-tooltip>
-
-        <!-- 主题切换 -->
-        <a-tooltip title="主题">
-          <a-button type="text" class="action-btn">
-            <template #icon><BulbOutlined /></template>
-          </a-button>
+          <div class="action-btn" @click="showSearch = true">
+            <SearchOutlined />
+          </div>
         </a-tooltip>
 
         <!-- 用户区域 -->
@@ -55,7 +63,7 @@
               <template #overlay>
                 <a-menu class="dropdown-menu">
                   <a-menu-item key="profile">
-                    <router-link to="/my_space">
+                    <router-link to="/space/my_space">
                       <UserOutlined />
                       <span>我的空间</span>
                     </router-link>
@@ -99,7 +107,7 @@
         />
         <div class="hot-tags">
           <span class="hot-label">热门：</span>
-          <a-tag v-for="tag in hotTags" :key="tag" class="hot-tag">{{ tag }}</a-tag>
+          <a-tag v-for="tag in hotTags" :key="tag" class="hot-tag" @click="searchByTag(tag)">{{ tag }}</a-tag>
         </div>
       </div>
     </a-modal>
@@ -107,80 +115,51 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, h, ref } from 'vue'
+import { computed, ref, onMounted } from 'vue'
 import {
-  BulbOutlined,
+  AppstoreOutlined,
   DownOutlined,
+  FolderOutlined,
   HomeOutlined,
   LoginOutlined,
   LogoutOutlined,
+  PictureOutlined,
   SearchOutlined,
+  TeamOutlined,
   UserOutlined,
 } from '@ant-design/icons-vue'
-import { MenuProps, message } from 'ant-design-vue'
-import { useRouter } from 'vue-router'
+import { message } from 'ant-design-vue'
+import { useRouter, useRoute } from 'vue-router'
 import { useLoginUserStore } from '@/stores/useLoginUserStore.ts'
 import { userLogoutUsingPost } from '@/api/userController.ts'
 
-const current = ref<string[]>([])
 const router = useRouter()
+const route = useRoute()
 const showSearch = ref(false)
 const searchText = ref('')
 const hotTags = ['风景', '动漫', '人物', '建筑', '动物']
+const currentPath = ref('/')
 
-// 菜单列表
-const originItems = [
-  {
-    key: '/',
-    icon: () => h(HomeOutlined),
-    label: '主页',
-    title: '主页',
-  },
-  {
-    key: '/admin/userManage',
-    label: '用户管理',
-    title: '用户管理',
-  },
-  {
-    key: '/admin/pictureManage',
-    label: '图片管理',
-    title: '图片管理',
-  },
-  {
-    key: '/admin/spaceManage',
-    label: '空间管理',
-    title: '空间管理',
-  },
-]
-
-// 过滤菜单项
-const filterMenus = (menus = [] as MenuProps['items']) => {
-  return menus?.filter((menu) => {
-    if (menu?.key?.startsWith('/admin')) {
-      const loginUser = loginUserStore.loginUser
-      if (!loginUser || loginUser.userRole !== 'admin') {
-        return false
-      }
-    }
-    return true
-  })
-}
-
-// 展示在菜单的路由数组
-const items = computed<MenuProps['items']>(() => filterMenus(originItems))
 const loginUserStore = useLoginUserStore()
 
-// 路由跳转事件
-const doMenuClick = ({ key }: { key: string }) => {
-  router.push({
-    path: key,
-  })
-}
-
-// 监听路由变化，更新当前选中菜单
-router.afterEach((to) => {
-  current.value = [to.path]
+// 判断是否为管理员
+const isAdmin = computed(() => {
+  return loginUserStore.loginUser.userRole === 'admin'
 })
+
+// 监听路由变化
+router.afterEach((to) => {
+  currentPath.value = to.path
+})
+
+onMounted(() => {
+  currentPath.value = route.path
+})
+
+// 导航跳转
+const navigateTo = (path: string) => {
+  router.push(path)
+}
 
 // 搜索
 const doSearch = () => {
@@ -192,6 +171,12 @@ const doSearch = () => {
     showSearch.value = false
     searchText.value = ''
   }
+}
+
+// 按标签搜索
+const searchByTag = (tag: string) => {
+  searchText.value = tag
+  doSearch()
 }
 
 // 用户注销
@@ -276,39 +261,66 @@ const doLogout = async () => {
 .nav-menu {
   flex: 1;
   display: flex;
+  align-items: center;
   justify-content: center;
+  gap: 8px;
 }
 
-.transparent-menu {
-  background: transparent !important;
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border-radius: 10px;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.nav-item:hover {
+  color: #fff;
+  background: rgba(102, 126, 234, 0.15);
+}
+
+.nav-item.active {
+  color: #fff;
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.3) 0%, rgba(118, 75, 162, 0.3) 100%);
+}
+
+.nav-item :deep(.anticon) {
+  font-size: 16px;
 }
 
 /* 右侧操作区 */
 .header-actions {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
 }
 
 .action-btn {
-  color: rgba(255, 255, 255, 0.7) !important;
-  border-radius: 8px;
   width: 40px;
   height: 40px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.05);
   display: flex;
   align-items: center;
   justify-content: center;
+  color: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
   transition: all 0.3s ease;
 }
 
 .action-btn:hover {
-  color: #fff !important;
-  background: rgba(102, 126, 234, 0.2) !important;
+  color: #fff;
+  background: rgba(102, 126, 234, 0.2);
 }
 
 /* 用户区域 */
 .user-section {
-  margin-left: 16px;
+  margin-left: 8px;
 }
 
 .user-avatar-wrapper {
@@ -467,13 +479,26 @@ const doLogout = async () => {
 }
 
 /* 响应式 */
-@media (max-width: 992px) {
-  .nav-menu {
+@media (max-width: 1200px) {
+  .nav-item {
+    padding: 10px 14px;
+    font-size: 13px;
+  }
+
+  .nav-item span {
     display: none;
+  }
+
+  .nav-item :deep(.anticon) {
+    font-size: 18px;
   }
 }
 
-@media (max-width: 576px) {
+@media (max-width: 768px) {
+  .nav-menu {
+    display: none;
+  }
+
   .header-inner {
     padding: 0 16px;
   }
