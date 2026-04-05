@@ -359,6 +359,10 @@ const doLogout = async () => {
   font-weight: 500 !important;
   box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4) !important;
   transition: all 0.3s ease !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
 }
 
 .login-btn:hover {
