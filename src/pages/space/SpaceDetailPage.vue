@@ -35,7 +35,7 @@
       <color-picker format="hex" @pureColorChange="onColorChange" />
     </a-form-item>
     <!-- 图片列表 -->
-    <PictureList :dataList="dataList" :loading="loading" :show-ops="true" :on-reload="fetchData" />
+    <MasonryPictureList :dataList="dataList" :loading="loading" :show-ops="true" :on-reload="fetchData" />
     <a-pagination
       style="text-align: right"
       v-model:current="searchParams.current"
@@ -60,7 +60,7 @@ import {
 } from '@/api/pictureController.ts'
 import { getSpaceVoByIdUsingGet } from '@/api/spaceController.ts'
 import BatchEditPictureModal from '@/components/BatchEditPictureModel.vue'
-import PictureList from '@/components/PictureList.vue'
+import MasonryPictureList from '@/components/MasonryPictureList.vue'
 import PictureSearchForm from '@/components/PictureSearchForm.vue'
 import { formatSize } from '@/utils'
 import { BarChartOutlined, EditOutlined } from '@ant-design/icons-vue'

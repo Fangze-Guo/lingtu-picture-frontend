@@ -33,7 +33,7 @@
       </a-space>
     </div>
     <!-- 图片列表 -->
-    <PictureList :dataList="dataList" :loading="loading" />
+    <MasonryPictureList :dataList="dataList" :loading="loading" />
     <a-pagination
       style="text-align: center"
       v-model:current="searchParams.current"
@@ -56,7 +56,7 @@ import {
 } from '@/api/pictureController.ts'
 import { message } from 'ant-design-vue'
 import { useRouter } from 'vue-router'
-import PictureList from '@/components/PictureList.vue'
+import MasonryPictureList from '@/components/MasonryPictureList.vue'
 import { ColorPicker } from 'vue3-colorpicker'
 
 const dataList = ref<API.PictureVO[]>([])
