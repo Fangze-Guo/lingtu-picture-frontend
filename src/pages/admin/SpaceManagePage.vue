@@ -1,84 +1,109 @@
 <template>
   <div id="spaceManagePage">
-    <a-space style="margin-bottom: 16px">
-      <a-button type="primary" href="/space/add_space" target="_blank">+ 创建空间</a-button>
-      <a-button type="primary" ghost href="/space_analyze?queryPublic=1" target="_blank">
-        分析公共图库
-      </a-button>
-      <a-button type="primary" ghost href="/space_analyze?queryAll=1" target="_blank">
-        分析全空间
-      </a-button>
-    </a-space>
+    <div class="page-header">
+      <h2 class="page-title">
+        <FolderOutlined />
+        空间管理
+      </h2>
+      <a-space>
+        <a-button type="primary" @click="goToCreateSpace">
+          <template #icon><PlusOutlined /></template>
+          创建空间
+        </a-button>
+        <a-button @click="goToAnalyzePublic">
+          <template #icon><BarChartOutlined /></template>
+          分析公共图库
+        </a-button>
+        <a-button @click="goToAnalyzeAll">
+          <template #icon><PieChartOutlined /></template>
+          分析全空间
+        </a-button>
+      </a-space>
+    </div>
+
     <!-- 搜索表单 -->
-    <a-form :model="searchParams" layout="inline" @finish="doSearch" style="margin-bottom: 30px">
-      <a-form-item label="空间名称">
-        <a-input v-model:value="searchParams.spaceName" placeholder="请输入空间名称" allow-clear />
-      </a-form-item>
-      <a-form-item label="空间级别">
-        <a-select
-          v-model:value="searchParams.spaceLevel"
-          placeholder="请选择空间级别"
-          :options="SPACE_LEVEL_OPTIONS"
-          style="min-width: 180px"
-          allow-clear
-        />
-      </a-form-item>
-      <a-form-item label="用户 id">
-        <a-input v-model:value="searchParams.userId" placeholder="请输入用户 id" allow-clear />
-      </a-form-item>
-      <a-form-item>
-        <a-button type="primary" html-type="submit">搜索</a-button>
-      </a-form-item>
-    </a-form>
+    <div class="search-card">
+      <a-form :model="searchParams" layout="inline" @finish="doSearch">
+        <a-form-item label="空间名称">
+          <a-input v-model:value="searchParams.spaceName" placeholder="请输入空间名称" allow-clear />
+        </a-form-item>
+        <a-form-item label="空间级别">
+          <a-select
+            v-model:value="searchParams.spaceLevel"
+            placeholder="请选择空间级别"
+            :options="SPACE_LEVEL_OPTIONS"
+            style="min-width: 180px"
+            allow-clear
+          />
+        </a-form-item>
+        <a-form-item label="用户ID">
+          <a-input v-model:value="searchParams.userId" placeholder="请输入用户ID" allow-clear />
+        </a-form-item>
+        <a-form-item>
+          <a-button type="primary" html-type="submit">
+            <template #icon><SearchOutlined /></template>
+            搜索
+          </a-button>
+        </a-form-item>
+      </a-form>
+    </div>
+
     <!-- 数据表格 -->
-    <a-table
-      :columns="columns"
-      :data-source="dataList"
-      :pagination="pagination"
-      @change="doTableChange"
-    >
-      <template #bodyCell="{ column, record }">
-        <!-- 空间级别 -->
-        <template v-if="column.dataIndex === 'spaceLevel'">
-          <a-tag v-if="record.spaceLevel == 0">{{ SPACE_LEVEL_MAP[record.spaceLevel] }}</a-tag>
-          <a-tag v-if="record.spaceLevel == 1" style="background-color: skyblue"
-            >{{ SPACE_LEVEL_MAP[record.spaceLevel] }}
-          </a-tag>
-          <a-tag v-if="record.spaceLevel == 2" style="background-color: gold"
-            >{{ SPACE_LEVEL_MAP[record.spaceLevel] }}
-          </a-tag>
+    <div class="table-card">
+      <a-table
+        :columns="columns"
+        :data-source="dataList"
+        :pagination="pagination"
+        @change="doTableChange"
+        class="dark-table"
+      >
+        <template #bodyCell="{ column, record }">
+          <template v-if="column.dataIndex === 'spaceLevel'">
+            <a-tag :class="['level-tag', `level-${record.spaceLevel}`]">
+              {{ SPACE_LEVEL_MAP[record.spaceLevel] }}
+            </a-tag>
+          </template>
+          <template v-if="column.dataIndex === 'spaceUseInfo'">
+            <div class="usage-info">
+              <div class="usage-item">
+                <span class="usage-label">容量</span>
+                <a-progress
+                  :percent="((record.totalSize / record.maxSize) * 100).toFixed(1)"
+                  :show-info="false"
+                  stroke-color="#667eea"
+                  size="small"
+                />
+                <span class="usage-value">{{ formatSize(record.totalSize) }} / {{ formatSize(record.maxSize) }}</span>
+              </div>
+              <div class="usage-item">
+                <span class="usage-label">数量</span>
+                <span class="usage-value">{{ record.totalCount }} / {{ record.maxCount }}</span>
+              </div>
+            </div>
+          </template>
+          <template v-else-if="column.dataIndex === 'createTime'">
+            {{ dayjs(record.createTime).format('YYYY-MM-DD HH:mm') }}
+          </template>
+          <template v-else-if="column.dataIndex === 'editTime'">
+            {{ dayjs(record.editTime).format('YYYY-MM-DD HH:mm') }}
+          </template>
+          <template v-else-if="column.key === 'action'">
+            <a-space>
+              <a-button type="link" size="small" @click="goToEdit(record)">编辑</a-button>
+              <a-button type="link" size="small" @click="goToAnalyze(record)">分析</a-button>
+              <a-popconfirm
+                title="确定删除该空间吗？"
+                ok-text="确定"
+                cancel-text="取消"
+                @confirm="doDelete(record)"
+              >
+                <a-button type="link" size="small" danger>删除</a-button>
+              </a-popconfirm>
+            </a-space>
+          </template>
         </template>
-        <!-- 使用情况 -->
-        <template v-if="column.dataIndex === 'spaceUseInfo'">
-          <div>大小：{{ formatSize(record.totalSize) }} / {{ formatSize(record.maxSize) }}</div>
-          <div>数量：{{ record.totalCount }} / {{ record.maxCount }}</div>
-        </template>
-        <template v-else-if="column.dataIndex === 'createTime'">
-          {{ dayjs(record.createTime).format('YYYY-MM-DD HH:mm:ss') }}
-        </template>
-        <template v-else-if="column.dataIndex === 'editTime'">
-          {{ dayjs(record.editTime).format('YYYY-MM-DD HH:mm:ss') }}
-        </template>
-        <template v-else-if="column.key === 'action'">
-          <a-space wrap>
-            <a-button type="link" :href="`/space/add_space?id=${record.id}`" target="_blank">
-              编辑
-            </a-button>
-            <a-popconfirm
-              title="您确定删除该空间吗？"
-              ok-text="确定"
-              cancel-text="取消"
-              @confirm="doDelete(record)"
-            >
-              <a-button type="link" danger>删除</a-button>
-            </a-popconfirm>
-            <a-button type="link" :href="`/space_analyze?spaceId=${record.id}`" target="_blank">
-              分析
-            </a-button>
-          </a-space>
-        </template>
-      </template>
-    </a-table>
+      </a-table>
+    </div>
   </div>
 </template>
 
@@ -86,80 +111,55 @@
 import { computed, onMounted, reactive, ref } from 'vue'
 import { message } from 'ant-design-vue'
 import dayjs from 'dayjs'
+import { useRouter } from 'vue-router'
 import { deleteSpaceUsingPost, listSpaceByPageUsingPost } from '@/api/spaceController.ts'
 import { SPACE_LEVEL_MAP, SPACE_LEVEL_OPTIONS } from '@/constants/space.ts'
 import { formatSize } from '@/utils'
+import {
+  BarChartOutlined,
+  FolderOutlined,
+  PieChartOutlined,
+  PlusOutlined,
+  SearchOutlined,
+} from '@ant-design/icons-vue'
 
-// 定义列
+const router = useRouter()
+
 const columns = [
-  {
-    title: 'id',
-    dataIndex: 'id',
-    width: 80,
-  },
-  {
-    title: '空间名称',
-    dataIndex: 'spaceName',
-  },
-  {
-    title: '空间级别',
-    dataIndex: 'spaceLevel',
-  },
-  {
-    title: '使用情况',
-    dataIndex: 'spaceUseInfo',
-  },
-  {
-    title: '用户 id',
-    dataIndex: 'userId',
-    width: 80,
-  },
-  {
-    title: '创建时间',
-    dataIndex: 'createTime',
-  },
-  {
-    title: '编辑时间',
-    dataIndex: 'editTime',
-  },
-  {
-    title: '操作',
-    key: 'action',
-  },
+  { title: 'ID', dataIndex: 'id', width: 80 },
+  { title: '空间名称', dataIndex: 'spaceName' },
+  { title: '空间级别', dataIndex: 'spaceLevel', width: 100 },
+  { title: '使用情况', dataIndex: 'spaceUseInfo', width: 200 },
+  { title: '用户ID', dataIndex: 'userId', width: 80 },
+  { title: '创建时间', dataIndex: 'createTime', width: 120 },
+  { title: '编辑时间', dataIndex: 'editTime', width: 120 },
+  { title: '操作', key: 'action', width: 180 },
 ]
 
-// 定义数据
 const dataList = ref<API.Space[]>([])
 const total = ref(0)
-// 搜索条件
+
 const searchParams = reactive<API.SpaceQueryRequest>({
   current: 1,
   pageSize: 10,
   sortField: 'createTime',
   sortOrder: 'descend',
 })
-// 分页信息
-const pagination = computed(() => {
-  return {
-    current: searchParams.current,
-    pageSize: searchParams.pageSize,
-    total: total.value,
-    showSizeChanger: true,
-    showTotal: (total: number) => `共 ${total} 条`,
-  }
-})
+
+const pagination = computed(() => ({
+  current: searchParams.current,
+  pageSize: searchParams.pageSize,
+  total: total.value,
+  showSizeChanger: true,
+  showTotal: (total: number) => `共 ${total} 条`,
+}))
 
 onMounted(() => {
   fetchData()
 })
 
-/**
- * 获取数据
- */
 const fetchData = async () => {
-  const res = await listSpaceByPageUsingPost({
-    ...searchParams,
-  })
+  const res = await listSpaceByPageUsingPost({ ...searchParams })
   if (res.data.code == 200 && res.data.data) {
     dataList.value = res.data.data.records ?? []
     total.value = res.data.data.total ?? 0
@@ -168,38 +168,178 @@ const fetchData = async () => {
   }
 }
 
-/**
- * 表格改变
- * @param pagination
- */
 const doTableChange = (pagination: { current: number; pageSize: number }) => {
   searchParams.current = pagination.current
   searchParams.pageSize = pagination.pageSize
   fetchData()
 }
 
-/**
- * 搜索
- */
 const doSearch = () => {
   searchParams.current = 1
   fetchData()
 }
 
-/**
- * 删除数据
- * @param record
- */
 const doDelete = async (record: API.SpaceVO) => {
   const res = await deleteSpaceUsingPost({ id: record.id })
   if (res.data.code == 200) {
     message.success('删除成功')
-    // 重新获取列表数据
     await fetchData()
   } else {
     message.error('删除失败，' + res.data.message)
   }
 }
+
+const goToCreateSpace = () => {
+  router.push('/space/add_space')
+}
+
+const goToEdit = (record: API.Space) => {
+  router.push(`/space/add_space?id=${record.id}`)
+}
+
+const goToAnalyze = (record: API.Space) => {
+  router.push(`/space_analyze?spaceId=${record.id}`)
+}
+
+const goToAnalyzePublic = () => {
+  router.push('/space_analyze?queryPublic=1')
+}
+
+const goToAnalyzeAll = () => {
+  router.push('/space_analyze?queryAll=1')
+}
 </script>
 
-<style scoped></style>
+<style scoped>
+#spaceManagePage {
+  padding: 24px;
+  min-height: calc(100vh - 64px);
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.page-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #fff;
+  font-size: 24px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.search-card {
+  background: rgba(26, 26, 46, 0.6);
+  backdrop-filter: blur(20px);
+  border-radius: 16px;
+  padding: 20px 24px;
+  margin-bottom: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.search-card :deep(.ant-form-item-label > label) {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.search-card :deep(.ant-input),
+.search-card :deep(.ant-select-selector) {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  color: #fff !important;
+}
+
+.search-card :deep(.ant-input::placeholder) {
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.table-card {
+  background: rgba(26, 26, 46, 0.6);
+  backdrop-filter: blur(20px);
+  border-radius: 16px;
+  padding: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.dark-table :deep(.ant-table) {
+  background: transparent !important;
+}
+
+.dark-table :deep(.ant-table-thead > tr > th) {
+  background: rgba(102, 126, 234, 0.15) !important;
+  color: rgba(255, 255, 255, 0.9) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+.dark-table :deep(.ant-table-tbody > tr > td) {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+  color: rgba(255, 255, 255, 0.8) !important;
+}
+
+.dark-table :deep(.ant-table-tbody > tr:hover > td) {
+  background: rgba(102, 126, 234, 0.1) !important;
+}
+
+.dark-table :deep(.ant-pagination-item) {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.dark-table :deep(.ant-pagination-item a) {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.dark-table :deep(.ant-pagination-item-active) {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-color: transparent;
+}
+
+.level-tag {
+  border-radius: 12px;
+  border: none;
+  padding: 2px 12px;
+}
+
+.level-tag.level-0 {
+  background: rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.level-tag.level-1 {
+  background: rgba(24, 144, 255, 0.3);
+  color: #40a9ff;
+}
+
+.level-tag.level-2 {
+  background: rgba(250, 173, 20, 0.3);
+  color: #ffc53d;
+}
+
+.usage-info {
+  font-size: 12px;
+}
+
+.usage-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.usage-label {
+  color: rgba(255, 255, 255, 0.5);
+  min-width: 32px;
+}
+
+.usage-value {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.dark-table :deep(.ant-progress-bg) {
+  background-color: #667eea !important;
+}
+</style>
