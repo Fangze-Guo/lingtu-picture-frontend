@@ -189,15 +189,17 @@ const loadMore = async () => {
 const onPageChange = (page: number, pageSize: number) => {
   searchParams.current = page
   searchParams.pageSize = pageSize
-  fetchData()
+  fetchData(false)
 }
 
 /**
  * 获取数据
  */
-const fetchData = async () => {
+const fetchData = async (resetPage = true) => {
   loading.value = true
-  searchParams.current = 1
+  if (resetPage) {
+    searchParams.current = 1
+  }
   dataList.value = []
 
   const res = await listPictureVoByPageUsingPost({ ...searchParams })
