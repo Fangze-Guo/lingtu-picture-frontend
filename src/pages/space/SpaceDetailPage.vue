@@ -5,16 +5,17 @@
       <div class="space-info">
         <div class="space-title">
           <h2>{{ space.spaceName }}</h2>
-          <a-tag color="purple" class="space-tag">私有空间</a-tag>
+          <a-tag class="space-tag">私有空间</a-tag>
         </div>
         <div class="space-stats">
           <div class="stat-item">
             <div class="stat-label">图片数量</div>
-            <div class="stat-value">{{ total }} / {{ space.maxCount }}</div>
+            <div class="stat-value">{{ total }} / {{ space.maxCount || 0 }}</div>
             <a-progress
-              :percent="((total / (space.maxCount || 1)) * 100).toFixed(1)"
+              :percent="Math.min((total / (space.maxCount || 1)) * 100, 100)"
               :show-info="false"
               stroke-color="#667eea"
+              trail-color="rgba(255,255,255,0.1)"
             />
           </div>
           <div class="stat-item">
@@ -25,10 +26,11 @@
             <a-tooltip :title="`占用空间 ${formatSize(space.totalSize)} / ${formatSize(space.maxSize)}`">
               <a-progress
                 type="circle"
-                :percent="(((space.totalSize ?? 0) * 100) / (space.maxSize ?? 1)).toFixed(1)"
+                :percent="Math.min((((space.totalSize ?? 0) * 100) / (space.maxSize ?? 1)), 100)"
                 :size="60"
                 :stroke-width="8"
                 :stroke-color="getStorageColor(space.totalSize, space.maxSize)"
+                trail-color="rgba(255,255,255,0.1)"
               />
             </a-tooltip>
           </div>
@@ -39,8 +41,7 @@
           <a-button
             type="primary"
             size="large"
-            :href="`/picture/add_picture?spaceId=${id}`"
-            target="_blank"
+            @click="goToAddPicture"
             block
           >
             <template #icon><PlusOutlined /></template>
@@ -54,8 +55,7 @@
             type="primary"
             ghost
             size="large"
-            :href="`/space_analyze?spaceId=${id}`"
-            target="_blank"
+            @click="goToAnalyze"
             block
           >
             <template #icon><BarChartOutlined /></template>
@@ -116,7 +116,8 @@ import {
   PlusOutlined,
 } from '@ant-design/icons-vue'
 import { message } from 'ant-design-vue'
-import { h, onMounted, reactive, ref } from 'vue'
+import { onMounted, reactive, ref } from 'vue'
+import { useRouter } from 'vue-router'
 import { ColorPicker } from 'vue3-colorpicker'
 import 'vue3-colorpicker/style.css'
 
@@ -124,6 +125,7 @@ const props = defineProps<{
   id: number
 }>()
 const space = ref<API.SpaceVO>({})
+const router = useRouter()
 
 // 获取空间详情
 const fetchSpaceDetail = async () => {
@@ -142,10 +144,6 @@ const fetchSpaceDetail = async () => {
     }
   }
 }
-
-onMounted(() => {
-  fetchSpaceDetail()
-})
 
 // 数据
 const dataList = ref<API.PictureVO[]>([])
@@ -217,6 +215,7 @@ const fetchData = async (resetPage = true) => {
 
 // 页面加载时请求一次
 onMounted(() => {
+  fetchSpaceDetail()
   fetchData()
 })
 
@@ -252,7 +251,7 @@ const onColorChange = async (color: string) => {
   loading.value = false
 }
 
-// 分享弹窗引用
+// 批量编辑弹窗引用
 const batchEditPictureModalRef = ref()
 
 // 批量编辑成功后，刷新数据
@@ -265,6 +264,22 @@ const doBatchEdit = () => {
   if (batchEditPictureModalRef.value) {
     batchEditPictureModalRef.value.openModal()
   }
+}
+
+// 跳转到创建图片页
+const goToAddPicture = () => {
+  router.push({
+    path: '/picture/add_picture',
+    query: { spaceId: props.id }
+  })
+}
+
+// 跳转到空间分析页
+const goToAnalyze = () => {
+  router.push({
+    path: '/space_analyze',
+    query: { spaceId: props.id }
+  })
 }
 
 /**
@@ -280,19 +295,18 @@ const getStorageColor = (used: number, total: number) => {
 
 <style scoped>
 #spaceDetailPage {
-  background: linear-gradient(135deg, #f5f7fa 0%, #e4e8eb 100%);
   min-height: 100vh;
   padding-bottom: 40px;
 }
 
 /* 空间头部 */
 .space-header {
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
-  border-radius: 16px;
-  padding: 24px;
+  background: rgba(26, 26, 46, 0.6);
+  backdrop-filter: blur(20px);
+  border-radius: 20px;
+  padding: 28px;
   margin: 24px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   display: flex;
   gap: 32px;
   align-items: stretch;
@@ -306,13 +320,13 @@ const getStorageColor = (used: number, total: number) => {
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-bottom: 24px;
+  margin-bottom: 28px;
 }
 
 .space-title h2 {
   margin: 0;
   font-size: 28px;
-  font-weight: 600;
+  font-weight: 700;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -320,71 +334,88 @@ const getStorageColor = (used: number, total: number) => {
 }
 
 .space-tag {
-  font-size: 14px;
-  padding: 4px 12px;
-  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.3) 0%, rgba(118, 75, 162, 0.3) 100%) !important;
+  border: 1px solid rgba(102, 126, 234, 0.4) !important;
+  color: rgba(255, 255, 255, 0.9) !important;
+  font-size: 13px;
+  padding: 4px 14px;
+  border-radius: 14px;
 }
 
 /* 空间统计 */
 .space-stats {
   display: flex;
-  gap: 32px;
+  gap: 48px;
 }
 
 .stat-item {
   flex: 1;
-  max-width: 200px;
+  max-width: 220px;
 }
 
 .stat-label {
   font-size: 13px;
-  color: #999;
+  color: rgba(255, 255, 255, 0.5);
   margin-bottom: 8px;
 }
 
 .stat-value {
-  font-size: 20px;
+  font-size: 22px;
   font-weight: 600;
-  color: #333;
+  color: #fff;
   margin-bottom: 12px;
 }
 
 /* 空间操作 */
 .space-actions {
-  min-width: 160px;
+  min-width: 180px;
 }
 
 .space-actions :deep(.ant-btn) {
-  border-radius: 10px;
-  height: 48px;
-  font-size: 15px;
+  border-radius: 12px !important;
+  height: 48px !important;
+  font-size: 15px !important;
+  font-weight: 500 !important;
+}
+
+.space-actions :deep(.ant-btn-primary) {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  border: none !important;
+}
+
+.space-actions :deep(.ant-btn-primary:not(.ant-btn-background-ghost)) {
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.space-actions :deep(.ant-btn-background-ghost) {
+  border-color: #667eea !important;
+  color: #667eea !important;
 }
 
 /* 筛选区域 */
 .filter-section {
-  background: rgba(255, 255, 255, 0.9);
+  background: rgba(26, 26, 46, 0.4);
   backdrop-filter: blur(10px);
-  border-radius: 12px;
+  border-radius: 16px;
   padding: 20px;
   margin: 0 24px 20px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 /* 颜色筛选 */
 .color-filter {
-  max-width: 1200px;
-  margin: 0 auto 20px 24px;
-  background: rgba(255, 255, 255, 0.8);
+  background: rgba(26, 26, 46, 0.4);
   backdrop-filter: blur(10px);
   padding: 16px 24px;
-  border-radius: 12px;
+  border-radius: 16px;
+  margin: 0 24px 20px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
   display: flex;
   justify-content: center;
 }
 
-.color-filter :deep(.ant-form-item-label) {
-  color: #666;
-  font-weight: 500;
+.color-filter :deep(.ant-form-item-label > label) {
+  color: rgba(255, 255, 255, 0.7);
 }
 
 /* 响应式 */
@@ -408,6 +439,10 @@ const getStorageColor = (used: number, total: number) => {
   .color-filter {
     margin-left: 16px;
     margin-right: 16px;
+  }
+
+  .space-actions {
+    min-width: auto;
   }
 }
 </style>

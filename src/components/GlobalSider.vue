@@ -2,7 +2,7 @@
   <div id="globalSider" v-if="loginUserStore.loginUser.id">
     <a-layout-sider
       class="sider"
-      width="220"
+      width="240"
       breakpoint="lg"
       collapsed-width="0"
       :trigger="null"
@@ -37,6 +37,22 @@
           />
         </div>
 
+        <!-- 设置区域 -->
+        <div class="settings-section">
+          <div class="menu-label">设置</div>
+          <div class="setting-item">
+            <span class="setting-label">
+              <UnorderedListOutlined />
+              分页模式
+            </span>
+            <a-switch
+              :checked="paginationMode"
+              @change="togglePaginationMode"
+              size="small"
+            />
+          </div>
+        </div>
+
         <!-- 底部装饰 -->
         <div class="sider-footer">
           <div class="decoration-line"></div>
@@ -48,11 +64,18 @@
 
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
-import { h, ref } from 'vue'
-import { PictureOutlined, UserOutlined, AppstoreOutlined, StarOutlined } from '@ant-design/icons-vue'
+import { h, ref, computed } from 'vue'
+import { PictureOutlined, UserOutlined, StarOutlined, UnorderedListOutlined } from '@ant-design/icons-vue'
 import { useLoginUserStore } from '@/stores/useLoginUserStore.ts'
 
-const menuItems = [
+const router = useRouter()
+const loginUserStore = useLoginUserStore()
+
+// 分页模式状态
+const paginationMode = ref(false)
+
+// 菜单项 - 每个都有唯一的 key
+const menuItems = computed(() => [
   {
     key: '/',
     label: '公共图库',
@@ -63,15 +86,7 @@ const menuItems = [
     label: '我的空间',
     icon: () => h(UserOutlined),
   },
-  {
-    key: '/space/my_space',
-    label: '收藏夹',
-    icon: () => h(StarOutlined),
-  },
-]
-
-const router = useRouter()
-const loginUserStore = useLoginUserStore()
+])
 
 // 当前选中菜单
 const current = ref<string[]>([])
@@ -87,6 +102,18 @@ const doMenuClick = ({ key }: { key: string }) => {
     path: key,
   })
 }
+
+// 切换分页模式
+const togglePaginationMode = (checked: boolean) => {
+  paginationMode.value = checked
+  // 触发全局事件通知其他组件
+  window.dispatchEvent(new CustomEvent('pagination-mode-change', { detail: checked }))
+}
+
+// 暴露分页模式状态
+defineExpose({
+  paginationMode
+})
 </script>
 
 <style scoped>
@@ -190,6 +217,35 @@ const doMenuClick = ({ key }: { key: string }) => {
 }
 
 .sider-menu :deep(.ant-menu-item .anticon) {
+  font-size: 16px;
+}
+
+/* 设置区域 */
+.settings-section {
+  padding: 16px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  margin-top: 16px;
+}
+
+.setting-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  margin: 8px 4px;
+}
+
+.setting-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 14px;
+}
+
+.setting-label :deep(.anticon) {
   font-size: 16px;
 }
 

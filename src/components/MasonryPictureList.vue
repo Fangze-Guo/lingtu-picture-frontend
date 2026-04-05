@@ -1,21 +1,5 @@
 <template>
   <div class="masonry-picture-list" ref="scrollContainer">
-    <!-- 模式切换 -->
-    <div class="mode-switch">
-      <div class="mode-switch-inner">
-        <a-radio-group v-model:value="loadMode" button-style="solid" size="small">
-          <a-radio-button value="infinite">
-            <template #icon><ThunderboltOutlined :spin="loading" /></template>
-            无限滚动
-          </a-radio-button>
-          <a-radio-button value="pagination">
-            <template #icon><UnorderedListOutlined /></template>
-            分页
-          </a-radio-button>
-        </a-radio-group>
-      </div>
-    </div>
-
     <!-- 骨架屏 -->
     <div v-if="loading && dataList.length === 0" class="skeleton-grid">
       <div v-for="i in 20" :key="i" class="skeleton-card">
@@ -170,11 +154,9 @@ import {
   PictureOutlined,
   SearchOutlined,
   ShareAltOutlined,
-  ThunderboltOutlined,
-  UnorderedListOutlined,
 } from '@ant-design/icons-vue'
 import { message, Modal } from 'ant-design-vue'
-import { h, computed, ref, watch, onBeforeUnmount } from 'vue'
+import { h, computed, ref, watch, onBeforeUnmount, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import ShareModel from '@/components/ShareModel.vue'
 
@@ -217,6 +199,15 @@ const loaderRef = ref<HTMLElement>()
 
 // Intersection Observer
 let observer: IntersectionObserver | null = null
+
+// 监听全局分页模式变化
+const handlePaginationModeChange = (e: CustomEvent) => {
+  loadMode.value = e.detail ? 'pagination' : 'infinite'
+}
+
+onMounted(() => {
+  window.addEventListener('pagination-mode-change', handlePaginationModeChange as EventListener)
+})
 
 // 监听加载模式变化
 watch(loadMode, () => {
@@ -265,6 +256,7 @@ watch(
 
 onBeforeUnmount(() => {
   cleanupObserver()
+  window.removeEventListener('pagination-mode-change', handlePaginationModeChange as EventListener)
 })
 
 // 计算网格样式
@@ -363,46 +355,6 @@ const doShare = (picture: API.PictureVO, e: Event) => {
 .masonry-picture-list {
   padding: 20px;
   min-height: calc(100vh - 200px);
-}
-
-/* 模式切换 */
-.mode-switch {
-  display: flex;
-  justify-content: center;
-  margin-bottom: 24px;
-}
-
-.mode-switch-inner {
-  background: rgba(26, 26, 46, 0.6);
-  backdrop-filter: blur(20px);
-  padding: 12px;
-  border-radius: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.mode-switch-inner :deep(.ant-radio-group) {
-  background: rgba(0, 0, 0, 0.3);
-  border-radius: 12px;
-  padding: 3px;
-}
-
-.mode-switch-inner :deep(.ant-radio-button-wrapper) {
-  border: none !important;
-  border-radius: 10px !important;
-  padding: 8px 20px;
-  color: rgba(255, 255, 255, 0.6) !important;
-  background: transparent !important;
-  transition: all 0.3s ease;
-}
-
-.mode-switch-inner :deep(.ant-radio-button-wrapper:hover) {
-  color: rgba(255, 255, 255, 0.9) !important;
-}
-
-.mode-switch-inner :deep(.ant-radio-button-wrapper-checked) {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
-  color: #fff !important;
-  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
 }
 
 /* 骨架屏 */
