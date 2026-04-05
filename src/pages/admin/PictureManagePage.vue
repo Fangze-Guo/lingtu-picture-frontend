@@ -69,7 +69,7 @@
                   :class="{
                     pass: record.reviewStatus === PIC_REVIEW_STATUS_ENUM.PASS,
                     reject: record.reviewStatus === PIC_REVIEW_STATUS_ENUM.REJECT,
-                    pending: record.reviewStatus === PIC_REVIEW_STATUS_ENUM.REVIEWING,
+                    pending: record.reviewStatus === PIC_REVIEW_STATUS_ENUM.PENDING,
                   }"
                 ></span>
                 <span>{{ PIC_REVIEW_STATUS_MAP[record.reviewStatus] }}</span>
